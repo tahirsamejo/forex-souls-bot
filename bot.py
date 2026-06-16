@@ -8,7 +8,7 @@ CHANNEL_ID = os.environ.get("CHANNEL_ID")
 GEMINI_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 def get_gold_signal():
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={}".format(GEMINI_API_KEY)
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={}".format(GEMINI_API_KEY)
     payload = {
         "contents": [{
             "parts": [{
@@ -16,9 +16,16 @@ def get_gold_signal():
             }]
         }]
     }
-    response = requests.post(url, json=payload)
-    data = response.json()
-    return data["candidates"][0]["content"]["parts"][0]["text"]
+    try:
+        response = requests.post(url, json=payload)
+        data = response.json()
+        print("API Response: {}".format(data))
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+        return text
+    except Exception as e:
+        print("Error: {}".format(e))
+        print("Full response: {}".format(response.text))
+        return "Signal generation failed. Please try again."
 
 def send_to_telegram(text):
     url = "https://api.telegram.org/bot{}/sendMessage".format(TELEGRAM_TOKEN)
